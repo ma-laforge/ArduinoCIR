@@ -94,7 +94,6 @@ public:
 	SymCount bits[BITS_NUMELEM][BIT_MAX+1]; //Represents: 00, 01, 10, 11
 
 	//TODO: Overwrite with validating function?:
-//	virtual bool IsValid(uint32_t data, int nbits) {return false;}
 	virtual bool IsValid(uint32_t data, int nbits) {return true;}
 
 	PktInfo();

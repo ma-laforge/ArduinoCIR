@@ -25,7 +25,6 @@ uint8_t GetBitSeq(const SymbolTol tolTbl[], uint8_t tblLen,
 	while (msg[_pos] != 0) {
 		//Protect from runaway matches:
 		if (_pos >= RxBuffer::PKTSYMB_MAX) return nFound;
-//IRDebug::valAPu32 = _pos;
 		if (msg[_pos] <= -PktLimits::SIGFREE_MIN) return nFound;
 		i = 0;
 		while (true) {

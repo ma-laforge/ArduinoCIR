@@ -152,9 +152,6 @@ bool DecodePkt_RC5(const PktInfo &info, const RxBuffer &rxBuf, int validLen,
 	-Read all bits as data bits (preamble is not special).
 	-First character will be a 1... Must therefore pad with a leading 0.
 */
-	//Try to match preamble:
-//	if (!MatchSymbols(info.preamble, rxBuf.symbols, pos)) return false;
-
 	//Convert to a bit sequence:
 	seqLen = GetBitSeq(tolTbl_RC5, tolTbl_RC5_len, rxBuf.symbols, pos, bitSeq);
 
@@ -163,7 +160,6 @@ bool DecodePkt_RC5(const PktInfo &info, const RxBuffer &rxBuf, int validLen,
 
 	//Make sure message was read to the end:
 	if (rxBuf.symbols[pos] > -PktLimits::SIGFREE_MIN) return false;
-//	if (rxBuf.symbols[pos] != 0) return false; //Did not make it to end of signal
 
 	//Pad with leading 0:
 	++seqLen;
@@ -181,9 +177,7 @@ bool DecodePkt_RC5(const PktInfo &info, const RxBuffer &rxBuf, int validLen,
 	result->protocol = IRProtocol::RC5;
 
 	//Must match protocol (Avoid false matches):
-//IRDebug::valAPu32 = 250+result->nbits;
 	if (result->nbits != 14) return false;
-//IRDebug::valAPu32 = result->data;
 	if (result->data & 0x3000 != 0x3000) return false;
 
 	return true;

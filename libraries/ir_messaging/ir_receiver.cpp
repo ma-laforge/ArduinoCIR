@@ -52,7 +52,6 @@ bool Receiver::PopMsg(IRMsg *result) {
 		if (!pktInfo.rxDecode) continue;
 
 		if (pktInfo.Decode(this->rxBuf, rxPos, result)) {
-//			IRDebug::valAPu32 = i;
 			Reset();
 			return true;
 		}

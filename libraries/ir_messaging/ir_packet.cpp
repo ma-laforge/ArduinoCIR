@@ -89,26 +89,11 @@ bool DecodePktDefault(const PktInfo &info, const RxBuffer &rxBuf, int validLen,
 	//TODO: Also use better protection in read access??
 	if (success) {
 		success = MatchSymbols(info.postamble, rxBuf.symbols, pos);
-//		IRDebug::valu32 = info.postamble[0]+1<<12;
-//		if (success) IRDebug::valu32 = 1023;
 	}
-
-/*
-//	IRDebug::valu32 = pos;
-	if (pos > IRDebug::valu32) {
-		IRDebug::valu32 = pos;
-		IRDebug::valIRMsg.protocol = info.protocol;
-		IRDebug::valIRMsg.data = data;
-		IRDebug::valIRMsg.nbits = bitCount;
-	}
-//	IRDebug::valu32 = validLen;
-//	IRDebug::valu32 = bitCount;
-*/
 
 	//Return values on success:
 	success = success && (validLen >= pos); //Did not read beyond valid data
 	if (success && (result)) {
-//		IRDebug::valu32 = 1024;
 		result->protocol = info.protocol;
 		result->data = data;
 		result->nbits = bitCount;
