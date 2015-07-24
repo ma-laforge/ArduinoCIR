@@ -25,13 +25,17 @@ typedef uint32_t hz_t;   //Frequency, in Hz
 //(Not compatible with base functions - used for readability of optimized code)
 typedef uint16_t usec_u16t; //Stores a little over 65 ms
 typedef uint32_t usec_u32t; //Stores a little over 4000 sec
+typedef uint64_t usec_u64t;
 typedef uint16_t msec_u16t; //Stores a little over 65 sec
 typedef uint32_t msec_u32t; //Stores a little over 4M sec
+typedef uint64_t msec_u64t;
 
 typedef int16_t usec_s16t; //Stores a little over +/-32 ms
 typedef int32_t usec_s32t; //Stores a little over +/-2000 sec
+typedef int64_t usec_s64t;
 typedef int16_t msec_s16t; //Stores a little over +/-32 sec
 typedef int32_t msec_s32t; //Stores a little over +/-2M sec
+typedef int64_t msec_s64t;
 
 //-----Wrapper for time functions (with nice associated data type)-----
 inline msec_t now_msec() {return millis();}
