@@ -18,12 +18,21 @@ Simple sketch transmits a hard-coded IR message when a button is pressed.
 const IRCtrl::IRMsg msg(IRCtrl::IRProtocol::NEC, 0x5EA1D827, 32); //Yamaha: Volume down
 
 //-----Instantiate HW-specific components-----
-const int PIN_BUTTON = 2;             //Pushbutton pin
-#define TIMER_IRTXMODULATOR 1         //!*
-#define TIMER_IRTXCARRIER 3           //!*Dictates IR transmit pin
+#define _HW_SELECTCONFIG 1 //1..2
+const int PIN_BUTTON = 2;            //Pushbutton pin
+
+#if (_HW_SELECTCONFIG == 1)
+	#define TIMER_IRTXCARRIER 2          //!*Dictates IR transmit pin
+	IRTX_CREATE_TMR8BSCLK(irTx, TIMER_IRTXCARRIER)
+#elif (_HW_SELECTCONFIG == 2)
+	// ***ATmega1280/2560 only***
+	#define TIMER_IRTXMODULATOR 1        //!*
+	#define TIMER_IRTXCARRIER 3          //!*Dictates IR transmit pin
+	IRTX_CREATE_TMR16B(irTx, TIMER_IRTXMODULATOR, TIMER_IRTXCARRIER)
+#endif
 //!*Must be #define-d to work with pre-processor macro
 
-IRTX_CREATE_TMR16B(irTx, TIMER_IRTXMODULATOR, TIMER_IRTXCARRIER)
+
 
 //-----State machine constants for handling button events-----
 //How long to invalidate the button after pressing the button (debounce)

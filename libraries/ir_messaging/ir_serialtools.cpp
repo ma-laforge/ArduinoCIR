@@ -3,6 +3,8 @@ Implements tools to help send info through the serial monitor.
 */
 
 #include <ir_serialtools.h>
+
+#ifdef ENABLE_IR_SERIAL_TOOLS
 #include <ir_receiver.h> //Access to structures
 
 namespace IRSerial {
@@ -71,8 +73,10 @@ void Print(const ArduinoHw::Timer16b::Timer &reg) {
       Serial.print(reg.OCRnA);
       Serial.print(", OCRnB: ");
       Serial.print(reg.OCRnB);
+#ifdef _AHW_TIMERS_HAS16B3OC
       Serial.print(", OCRnC: ");
       Serial.print(reg.OCRnC);
+#endif
 }
 
 int Print(const IRCtrl::SymCount *data, int max) {
@@ -142,4 +146,5 @@ void Print(const IRCtrl::IRMsg &msg) {
 
 }; //namespace IRSerial
 
+#endif //#ifdef ENABLE_IR_SERIAL_TOOLS
 //Last Line

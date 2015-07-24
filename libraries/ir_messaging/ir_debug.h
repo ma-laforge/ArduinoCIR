@@ -5,12 +5,12 @@ NOTE: Not a big fan of how debug is implemented.
 TODO: Give debug feature a little more thought.
 */
 
-//Definition of "SERIAL_DEBUG" (should be defined @ compilation - not here):
-#define SERIAL_DEBUG //Enables debug code
-#ifdef SERIAL_DEBUG
-
 #ifndef IR_DEBUG_H
 #define IR_DEBUG_H
+
+//Definition of "ENABLE_IR_DEBUG_TOOLS" (ideally defined @ compilation - not here):
+//#define ENABLE_IR_DEBUG_TOOLS //Compiles ir debug code
+#ifdef ENABLE_IR_DEBUG_TOOLS
 
 #include <ir_message.h>
 
@@ -28,6 +28,6 @@ bool DumpRequested(); //=true when user writes something to serial
 void ProcessEvents();
 }; //namespace IRDebug
 
+#endif //#ifdef ENABLE_IR_DEBUG_TOOLS
 #endif //#ifndef IR_DEBUG_H
-#endif //#ifdef SERIAL_DEBUG
 //Last Line

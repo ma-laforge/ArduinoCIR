@@ -1,23 +1,37 @@
-[IRremote]: http://www.righto.com/2009/08/multi-protocol-infrared-remote-library.html "IRremote (Ken Shirriff)"
+[IRremote]: <http://www.righto.com/2009/08/multi-protocol-infrared-remote-library.html> "IRremote (Ken Shirriff)"
 
 # ArduinoCIR: Consumer IR Control
 
 ## Description
 
-ArduinoCIR provides the ir\_messaging library, a ready-to-use solution for sending/receiving consumer IR (remote-control) signals on the Arduino platform.
+ArduinoCIR provides the ir\_messaging library, a ready-to-use solution for sending/receiving consumer IR (remote-control) signals on Arduino platforms.
 
 <a name="SupportedHW"></a>
 ### Supported Hardware
 
-Only a single chipset is supported at the moment: the ATmega2560.  Nonetheless, ir\_messaging was designed to be extensible to other Arduino platforms.  Of course, no effort was yet placed on the mechanics of *how* to conditionally build for different platforms.
+ArduinoCIR was designed to support multiple Atmel platforms.  At the moment, only a few are supported:
 
-- Arduino Mega 2560 / Arduino Mega ADK.
+- Atmel ATmega328/328P
+  - Arduino Uno
+  - Arduino Redboard (Tested)
+  - Arduino Pro
+  - Arduino Fio
+  - Arduino Mini
+  - Arduino Nano
+  - Arduino LilyPad
+  - Arduino BT
+  - Arduino Ethernet
+- Atmel ATmega1280
+  - Arduino Mega
+- Atmel ATmega2560
+  - Arduino Mega 2560 (Tested)
+  - Arduino Mega ADK (Tested)
 
 ### Supported Protocols
 
 The list of supported protocols is listed below.  Note that certain protocols might only be implemented for either transmit (tx) or receive (rx).
 
-- **NEC**: (tx/untested rx).
+- **NEC**: (tx/rx).
 - **RC-MM**: (tx only).
 - **RC-5**: (untested tx/untested rx).
 - **Sony SIRC**: (untested tx/rx).
@@ -26,7 +40,7 @@ New protocols can be added to [libraries/ir\_messaging/ir\_protocol.cpp](librari
 
 ### Purpose (Is there not IRremote already?)
 
-Indeed, the IRremote library already exists to interface Arduino platforms with consumer IR products.  The main differating factor of the ir\_messaging library is that it does not hardcode which timer/IO pin is used.
+Indeed, the IRremote library already exists to interface Arduino platforms with consumer IR products.  The main differating factor of the ir\_messaging library is that it does not hardcode the allocation of hadware timers.
 
 Here are a few advantages of ir\_messaging:
 
@@ -34,10 +48,10 @@ Here are a few advantages of ir\_messaging:
 	- Last version of IRremote I checked used the same timer hardware for both transmit & receive (contention).  Moreover, the trival time-interleaved (tx &hArr; rx) solution is not very robust.
 - Easier to select which timers & I/O pins to use for transmit/receive function.
 	- No need to read/modify core library files.
-	- Can be easily deduced from sample sketches (+ minimal info about hardware timers).
+	- Hardware select can be easily deduced from sample sketches (+ minimal knowldege of hardware timers).
 - Uses `IRMsg` class to simplify API (protocol, data & message length stay together).
 - More modular approach to supporting different chipsets.
-- Seems to be a more robust solution (but cannot remember exact reason why that is).
+- Seems to be a *slightly* more robust solution (but cannot remember exact reason why that is).
 
 Untested advantages:
 
@@ -50,38 +64,28 @@ Untested advantages:
 Definitely.  There are a few reasons to use IRremote instead of the ir\_messaging library.  Some that come to mind are listed below:
 
 - At the moment, IRremote supports more IR protocols.
-	- Potentially a problem if the project *must* communicate with an un-supported protocol.
+	- Only an advantage if your project *must* communicate with a given (un-supported) protocol.
 	- NOTE: Possible to add support for other protocols in ir\_messaging.
 - At the moment, IRremote supports more Arduino platforms.
-	- NOTE: Can use ATmega2560/ADK implementation as a model for adding platforms to ir\_messaging.
-- IRremote uses `delayMicroseconds()` (Timer0) to modulate the transmit carrier (mark/space).
-	- Does not need a dedicated timer to implement modulation (less hardware).
-- Might not be as comfortable making customizations to ir\_messaging library.
+- Might not be as comfortable making customizations to the ir\_messaging library.
 	- Implementation makes heavy use of C++ constructs (ex: objects).
 	- Code is divided into more files (This might not fit the way you work).
 	- Object/module hierarchy is more elaborate than IRremote.
+- Currently generates smaller binaries.
+- Larger community for support.
 
 ## Sample Sketches
 
 ir\_messaging provides 3 sample sketches under the [libraries/ir\_messaging/samples](libraries/ir_messaging/samples) sub-directory:
 
-- **ir\_repeater**: Simple sketch that re-transmits valid incomming IR messages.
-- **ir\_rx\_sniff**: Simple sketch that dumps recieved signal to serial output.
 - **ir\_tx\_onbutton**: Simple sketch that transmits a hard-coded IR message when a button is pressed.
-
-### Sample Sketch Pinouts
-
-The sample sketches listed above come pre-configured for the ATmega2560/ADK using the following I/O configuration:
-
-- **IR receiver module**: Pin 3.
-- **IR transmitter diode**: Pin 5.
-- **Push button**: Pin 2.
-
-If, for whatever reason, this pin list cannot be located: simply load one of the sample sketches and read the serial monitor upon device reset.  The sample sketches all dump the relevant software-configured pins.
+- **ir\_rx\_sniff**: Simple sketch that dumps recieved signal to serial output.
+- **ir\_repeater**: Simple sketch that re-transmits valid incomming IR messages.
+  - Note that this sketch only supports the Arduino Mega platforms.  Due to interrupt priorities, platforms that use the system clock (Timer0) for modulating the IR output will not successfully receive all incomming signals.  This task requires a bit more synchronization of the IR traffic.
 
 ## Usage Tips
 
-### Atmel `timer0`: Time & Delays
+### Atmel Timer0: Time & Delays
 
 On what appears to be all Atmel chipsets, the Arduino software uses `timer0` to measure time & implement delays (`delay()`, `delayMicroseconds()`, `millis()`, `micros()`).  Better not appropriate this timer for anything else.
 
@@ -114,9 +118,17 @@ Similarly, a wiring diagram for the *push button* signal required by the ir\_tx\
 <a name="HWPinout"></a>
 ### Hardware/Pinout Selection
 
-The ir\_messaging library is very flexible.  It allows the user to control which timers/pin drive the IR transmitter, and which are used by the IR receiver.
+The ir\_messaging library is relatively flexible.  The IR receiver software can be configured to listen on any available pin.  However, the **transmitter output pin** is controlled by whatever timer generates the **output carrier**:
 
-Please refer to the appropriate [datasheet](#ArduinoDatasheets) for more details regarding the capabilities of your particular Arduino platform.
+- ATmega328/328P
+  - Timer2: Pin 3.
+- ATmega1280/2560
+  - Timer1: Pin 11.
+  - Timer2: Pin 9.
+  - Timer3: Pin 5.
+  - Timer4: Pin 6.
+
+Please refer to the appropriate [datasheet](#Datasheets) for more details regarding the capabilities of your particular Arduino platform.
 
 ## Libraries (Dependencies)
 
@@ -137,6 +149,7 @@ The following lists a few key classes:
 - **`IRCtrl::IRProtocol::pktInfo[]`**: Details how each consumer IR protocol transmits/receives IR messages.
 
 And some low-level classes that might be useful for supporting more hardware:
+
 - **`ArduinoHW::Timer16b::Timer` class**: Facilitates the control of 16-bit timers (hopefully works for most arduino platforms).
 
 ## Compiling
@@ -146,12 +159,15 @@ The ir\_messaging library was tested on the version 1.0.5+dfsg2-2 (Linux) of the
 ## Known Limitations
 
 - IR receiver currently only works using a 16-bit timer (`IRCtrl::Timer16b::RxHw`).
-- IR transmitter currently only works using *two* 16-bit timers (`IRCtrl::Timer16b::TxHw`).
+- IR transmitter currently supports two resource allocations:
+  - System clock (Timer0) + an 8-bit timer (`IRCtrl::Timer8b::TxHw`),
+  - or *two* 16-bit timers (`IRCtrl::Timer16b::TxHw`).
 - ...
 
 ## Resources/Acknowledgments
 
-### Ken Shirriff
+<a name="Shirriff_et_al"></a>
+### Ken Shirriff (et al.)
 
 Ken Shirriff's IRremote library provides an interesting solution to consumer IR (remote-control) communication.  Ken's library is very inspiring:
 
@@ -169,12 +185,13 @@ The SB-Projects website contains useful information on selected consumer IR (rem
 
 - **IR Remote Control Theory**: <http://www.sbprojects.net/knowledge/ir/index.php>
 
-<a name="ArduinoDatasheets"></a>
-### Arduino Datasheets
+<a name="Datasheets"></a>
+### Datasheets
 
-The following list provides hyperlinks to some useful Arduino datasheets.  Please note the chipset corresponding to your particular Arduino platform.
+The following lists a few datasheets might be of use.
 
-- **ATmega2560**: <http://www.atmel.com/devices/atmega2560.aspx?tab=documents>
+- **ATmega328/328P**: <http://www.atmel.com/devices/atmega328p.aspx>
+- **ATmega1280/2560**: <http://www.atmel.com/devices/atmega2560.aspx>
 
 ## Disclaimer
 

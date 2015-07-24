@@ -13,6 +13,20 @@ IR signalling.
 //Helper macros needed to simplify how tx/rx blocks are created
 //TODO: Move macros to a higher-level file??
 //******************************************************************************
+
+//Create a high-level IR transmitter (TxHw/Transmitter) using system clock + 8-bit timer:
+#define __IRTX_CREATE_TMR8BSCLK(txSymbol, tmrCarrier) \
+	/*-----Instantiate HW-specific components-----*/ \
+	/*TODO: Create TxHw in fast memory?*/ \
+	void (_irmsghw_##txSymbol##_fetchSymbol)(); \
+	IRCtrl::Timer8bSysClk::TxHw (_irmsghw_##txSymbol)( \
+		_AHW_GET_TIMER(tmrCarrier), (_irmsghw_##txSymbol##_fetchSymbol) \
+	); \
+	/*-----Povide HW-agnostic objects-----*/ \
+	IRCtrl::Transmitter (txSymbol)(_irmsghw_##txSymbol); \
+	/*-----ISR probably gets defined in global namespace-----*/ \
+	void (_irmsghw_##txSymbol##_fetchSymbol)() {(txSymbol).ProcessISR();}
+
 //Create a high-level IR transmitter (TxHw/Transmitter) using two 16-bit timers:
 //Suggestion: Use timer1 for modulator (highest priority/lowest jitter?)
 #define __IRTX_CREATE_TMR16B(txSymbol, tmrMod, tmrCarrier) \
@@ -24,7 +38,7 @@ IR signalling.
 	/*-----Povide HW-agnostic objects-----*/ \
 	IRCtrl::Transmitter (txSymbol)(_irmsghw_##txSymbol); \
 	/*-----ISR probably gets defined in global namespace-----*/ \
-	ISR(TIMER ## tmrMod ## _OVF_vect) {(txSymbol).ProcessISR();} \
+	ISR(TIMER ## tmrMod ## _OVF_vect) {(txSymbol).ProcessISR();}
 
 //Create a high-level IR receiver (RxHw) using a 16-bit timer:
 #define __IRRX_CREATE_TMR16B(rxSymbol, timer, ioPin, invSig) \
@@ -36,9 +50,11 @@ IR signalling.
 	/*-----Povide HW-agnostic objects-----*/ \
 	IRCtrl::Receiver (rxSymbol)(_irmsghw_##rxSymbol, (invSig)); \
 	/*-----ISR probably gets defined in global namespace-----*/ \
-	ISR(TIMER ## timer ## _COMPA_vect) {(rxSymbol).ProcessISR();} \
+	ISR(TIMER ## timer ## _COMPA_vect) {(rxSymbol).ProcessISR();}
 
 //Use following macros instead.  They allow define-d values for timer values.
+#define IRTX_CREATE_TMR8BSCLK(txSymbol, tmrCarrier) \
+	__IRTX_CREATE_TMR8BSCLK(txSymbol, tmrCarrier)
 #define IRTX_CREATE_TMR16B(txSymbol, tmrMod, tmrCarrier) \
 	__IRTX_CREATE_TMR16B(txSymbol, tmrMod, tmrCarrier)
 #define IRRX_CREATE_TMR16B(rxSymbol, timer, ioPin, invSig) \
@@ -47,11 +63,39 @@ IR signalling.
 //Low-level IR rx/tx controllers
 //******************************************************************************
 namespace IRCtrl {
+
+	typedef void (*TxHwFetchSymbolHdlr)(void);
+
+namespace Timer8bSysClk {
+	//Implementation of TxHw object using ATMEL's 8-bit timers + sys clock.
+	//NOTE: Does not support asynchronous transmit (waits on system clock).
+
+	class TxHw: public ::IRCtrl::TxHw {
+	public:
+		ArduinoHw::Timer8b::Timer &tmrCarrier;
+		ArduinoHw::Timer8b::Config cfgCarrier[2]; //Carrier config
+		usec_u16t nextEvent;
+		TxHwFetchSymbolHdlr fetchSymbol;
+		bool done;
+		const int ioPin; //Cached
+
+		inline int GetOutputPin() {return ioPin;}
+		void SetOutput(int value);
+		void Enable();
+		void Disable();
+		inline void SetModEventTime(usec_u16t nextEvent) {this->nextEvent = nextEvent;}
+		void SetCarrier(int value_kHz);
+		void Configure();
+
+		TxHw(ArduinoHw::Timer8b::Timer &tmrCarrier, TxHwFetchSymbolHdlr fetchSymbol);
+	};
+
+}; //namespace Timer8bSysClk
+
 namespace Timer16b {
 	//Implementation of TxHw object using 2 of ATMEL's 16-bit timers:
 	//NOTE:
-	//   -Assume we have a 16MHz clock.  Should be ok given that this file
-	//    is platform-specific, and the clock is known.
+	//   -Assume we have a 16MHz clock.  Ok for now given supported Hw.
 	//TODO: Assert that we have a 16MHz clock or make code more generic
 	class TxHw: public ::IRCtrl::TxHw {
 	public:
@@ -78,7 +122,7 @@ namespace Timer16b {
 			ArduinoHw::Timer16b::Timer &tmrCarrier);
 	};
 
-	//Implementation of HwMsgProc object using ATMEL's 16-bit timer:
+	//Implementation of RxHw object using ATMEL's 16-bit timer:
 	class RxHw: public ::IRCtrl::RxHw {
 	public:
 		ArduinoHw::Timer16b::Timer &timer; //Main timer

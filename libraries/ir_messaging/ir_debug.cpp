@@ -4,8 +4,12 @@ Debugging module.
 
 #include <ir_debug.h>
 
-#ifdef SERIAL_DEBUG
+#ifdef ENABLE_IR_DEBUG_TOOLS
 #include <ir_serialtools.h>
+
+#ifndef ENABLE_IR_SERIAL_TOOLS
+#error "Must define ENABLE_IR_SERIAL_TOOLS to use ir_debug module."
+#endif
 
 namespace IRDebug {
 
@@ -38,10 +42,13 @@ void ProcessEvents() {
 
 		//Dump timer registers:
       Serial.print("\nTimer1:"); IRSerial::Print(ArduinoHw::timer1);
+#if _AHW_TIMERS_LAST >= 4
       Serial.print("\nTimer3:"); IRSerial::Print(ArduinoHw::timer3);
       Serial.print("\nTimer4:"); IRSerial::Print(ArduinoHw::timer4);
+#endif
    }
 }
 }; //namespace IRDebug
-#endif //#ifdef SERIAL_DEBUG
+
+#endif //#ifdef ENABLE_IR_DEBUG_TOOLS
 //Last Line

@@ -13,13 +13,12 @@ To add support for more hardware:
 
 #include <arduino_ext.h>
 
-#if defined __AVR_ATmega2560__
-	//Ok, this one is supported
-//#elif defined __AVR_ATmega1280__
-	//Actually this might work... maybe arduino_timers_ATmega2560.cpp
-	//should be renamed to something more generic?
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) \
+	|| defined(__AVR_ATmega328__) || defined(__AVR_ATmega328P__)
+	//Ok, these platforms are supported (in theory)
+	//TODO: Test for __AVR_ATmega328__ & __AVR_ATmega1280__
 #else
-	`//Error: HW not supported. See ir_messaging/irmsg_validatehw.h for details.
+	#error "HW not supported. See ir_messaging/irmsg_validatehw.h for details."
 #endif
 
 #endif //#ifndef IRMSG_VALIDATEHW_H
