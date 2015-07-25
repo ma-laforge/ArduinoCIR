@@ -19,12 +19,12 @@ const int PIN_IRRX = 4;               //IR receiver pin
 const bool INVERT_IRRX_SIGNAL = true; //Depends on polarity of rx module
 
 #if (_HW_SELECTCONFIG == 1)
-	#define TIMER_IRRX 1                 //!*
-	IRRX_CREATE_TMR16B(irRx, TIMER_IRRX, PIN_IRRX, INVERT_IRRX_SIGNAL)
+   #define TIMER_IRRX 1                 //!*
+   IRRX_CREATE_TMR16B(irRx, TIMER_IRRX, PIN_IRRX, INVERT_IRRX_SIGNAL)
 #elif (_HW_SELECTCONFIG == 2)
-	// ***ATmega1280/2560 only***
-	#define TIMER_IRRX 4                 //!*
-	IRRX_CREATE_TMR16B(irRx, TIMER_IRRX, PIN_IRRX, INVERT_IRRX_SIGNAL)
+   // ***ATmega1280/2560 only***
+   #define TIMER_IRRX 4                 //!*
+   IRRX_CREATE_TMR16B(irRx, TIMER_IRRX, PIN_IRRX, INVERT_IRRX_SIGNAL)
 #endif
 //!*Must be #define-d to work with pre-processor macro
 
