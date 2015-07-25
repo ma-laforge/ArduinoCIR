@@ -40,17 +40,19 @@ private:
 	bool DecodePkt(const PktInfo &prot, IRMsg *result) const;
 
 public:
-	void ProcessISR(); //ISR for message processing
-	inline bool MsgAvailable() {return RXSTATE_MSGCOMPLETE==rxState;}
-
-	void Reset(); //Reset state machine to read next message
-	bool PopMsg(IRMsg *result); //Auto-resets state machine
-
 	//Buffer for incomming IR signal:
 	//(Place after often-used data; promotes the use of faster instructions
 	// if present on processor?):
 	RxBuffer rxBuf; //TODO: inBuf?
 	//TODO: Do we need double-buffering?  Maybe use circular buffers?
+
+	//Low-level functions:
+	void ProcessISR(); //ISR for message processing
+	inline bool MsgAvailable() {return RXSTATE_MSGCOMPLETE==rxState;}
+	void Reset(); //Reset state machine to read next message
+
+	//Read in a valid (supported) IRMsg if one is available:
+	bool PopMsg(IRMsg *result); //Auto-resets state machine
 
 	void Configure(); //Ensure gets called by Arduino setup()
 	Receiver(RxHw &rxHw, bool invSig);

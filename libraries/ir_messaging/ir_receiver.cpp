@@ -29,7 +29,7 @@ void Receiver::Configure() {
 	rxHw.Configure();
 }
 
-//Resets the Rx state machine:
+//Reset the Rx state machine:
 void Receiver::Reset() {
 	//WARNING: No HW control; Called by constructor
 	rxState = RXSTATE_BUSY;
@@ -42,6 +42,7 @@ void Receiver::Reset() {
 	rxState = RXSTATE_READY;
 }
 
+//Read in a valid (supported) IRMsg if one is available
 bool Receiver::PopMsg(IRMsg *result) {
 	int i;
 
