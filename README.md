@@ -12,20 +12,20 @@ ArduinoCIR provides the ir\_messaging library, a ready-to-use solution for sendi
 ArduinoCIR was designed to support multiple Atmel platforms.  At the moment, only a few are supported:
 
 - Atmel ATmega328/328P
-  - Arduino Uno
-  - Arduino Redboard (Tested)
-  - Arduino Pro
-  - Arduino Fio
-  - Arduino Mini
-  - Arduino Nano
-  - Arduino LilyPad
-  - Arduino BT
-  - Arduino Ethernet
+	- Arduino Uno
+	- Arduino Redboard (Tested)
+	- Arduino Pro
+	- Arduino Fio
+	- Arduino Mini
+	- Arduino Nano
+	- Arduino LilyPad
+	- Arduino BT
+	- Arduino Ethernet
 - Atmel ATmega1280
-  - Arduino Mega
+	- Arduino Mega
 - Atmel ATmega2560
-  - Arduino Mega 2560 (Tested)
-  - Arduino Mega ADK (Tested)
+	- Arduino Mega 2560 (Tested)
+	- Arduino Mega ADK (Tested)
 
 ### Supported Protocols
 
@@ -45,7 +45,10 @@ Indeed, the IRremote library already exists to interface Arduino platforms with 
 Here are a few advantages of ir\_messaging:
 
 - *Designed* to simultaneously transmit & receive IR messages.
+	- Includes sample IR repeater project (**ir\_repeater**).
 	- Last version of IRremote I checked used the same timer hardware for both transmit & receive (contention).  Moreover, the trival time-interleaved (tx &hArr; rx) solution is not very robust.
+- Supports transmission (only) of **RC-MM** codes used by certain cable box models made by Motorola.
+	- Might need to repeat each transmitted message twice in rapid succession, as per the protocol.
 - Easier to select which timers & I/O pins to use for transmit/receive function.
 	- No need to read/modify core library files.
 	- Hardware select can be easily deduced from sample sketches (+ minimal knowldege of hardware timers).
@@ -81,17 +84,17 @@ ir\_messaging provides 3 sample sketches under the [libraries/ir\_messaging/samp
 - **ir\_tx\_onbutton**: Simple sketch that transmits a hard-coded IR message when a button is pressed.
 - **ir\_rx\_sniff**: Simple sketch that dumps recieved signal to serial output.
 - **ir\_repeater**: Simple sketch that re-transmits valid incomming IR messages.
-  - Note that this sketch only supports the Arduino Mega platforms.  Due to interrupt priorities, platforms that use the system clock (Timer0) for modulating the IR output will not successfully receive all incomming signals.  This task requires a bit more synchronization of the IR traffic.
+	- Note that this sketch only supports the Arduino Mega platforms.  Due to interrupt priorities, platforms that use the system clock (Timer0) for modulating the IR output will not successfully receive all incomming signals.  This task requires a bit more synchronization of the IR traffic.
 
 ## Usage Tips
 
 ### Atmel Timer0: Time & Delays
 
-On what appears to be all Atmel chipsets, the Arduino software uses `timer0` to measure time & implement delays (`delay()`, `delayMicroseconds()`, `millis()`, `micros()`).  Better not appropriate this timer for anything else.
+On what appears to be all Atmel chipsets, the Arduino software uses Timer0 to measure time & implement delays (`delay()`, `delayMicroseconds()`, `millis()`, `micros()`).  Better not appropriate this timer for anything else.
 
 ### Atmel: Timer Priorities
 
-Interrupt priority on on Atmel timers appear to match their number (highest priority for `timer0`, then `timer1`, ...).  To avoid potential signal jitter issues, select the lowest available timer (ex: `timer1`) to modulate the transmitter output (`TxHw::tmrMod`).
+Interrupt priority on on Atmel timers appear to match their number (highest priority for Timer0, then Timer1, ...).  To avoid potential signal jitter issues, select the lowest available timer (ex: `timer1`) to modulate the transmitter output (`TxHw::tmrMod`).
 
 ### Register Writes
 
@@ -121,12 +124,12 @@ Similarly, a wiring diagram for the *push button* signal required by the ir\_tx\
 The ir\_messaging library is relatively flexible.  The IR receiver software can be configured to listen on any available pin.  However, the **transmitter output pin** is controlled by whatever timer generates the **output carrier**:
 
 - ATmega328/328P
-  - Timer2: Pin 3.
+	- Timer2: Pin 3.
 - ATmega1280/2560
-  - Timer1: Pin 11.
-  - Timer2: Pin 9.
-  - Timer3: Pin 5.
-  - Timer4: Pin 6.
+	- Timer1: Pin 11.
+	- Timer2: Pin 9.
+	- Timer3: Pin 5.
+	- Timer4: Pin 6.
 
 Please refer to the appropriate [datasheet](#Datasheets) for more details regarding the capabilities of your particular Arduino platform.
 
@@ -160,8 +163,8 @@ The ir\_messaging library was tested on the version 1.0.5+dfsg2-2 (Linux) of the
 
 - IR receiver currently only works using a 16-bit timer (`IRCtrl::Timer16b::RxHw`).
 - IR transmitter currently supports two resource allocations:
-  - System clock (Timer0) + an 8-bit timer (`IRCtrl::Timer8b::TxHw`),
-  - or *two* 16-bit timers (`IRCtrl::Timer16b::TxHw`).
+	- System clock (Timer0) + an 8-bit timer (`IRCtrl::Timer8b::TxHw`),
+	- or *two* 16-bit timers (`IRCtrl::Timer16b::TxHw`).
 - ...
 
 ## Resources/Acknowledgments
