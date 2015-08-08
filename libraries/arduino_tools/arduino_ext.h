@@ -40,8 +40,20 @@ typedef int64_t msec_s64t;
 //-----Wrapper for time functions (with nice associated data type)-----
 inline msec_t now_msec() {return millis();}
 inline usec_t now_usec() {return micros();}
-inline void wait_msec(msec_t wTime) {delay(wTime);}
-inline void wait_usec(usec_t wTime) {delayMicroseconds(wTime);}
+
+//Don't call native functions.... They count cycles (cannot deal with interrupts).
+//inline void wait_msec(msec_t wTime) {delay(wTime);}
+//inline void wait_usec(usec_t wTime) {delayMicroseconds(wTime);}
+
+inline void wait_msec(msec_t wTime) {
+	msec_t tstart = now_msec();
+	while (now_msec()-tstart < wTime) ;
+}
+
+inline void wait_usec(usec_t wTime) {
+	usec_t tstart = now_usec();
+	while (now_usec()-tstart < wTime) ;
+}
 
 //Integer division with rounding (macro to ensure pre-evaluated)
 //TODO: would inline do just as well?

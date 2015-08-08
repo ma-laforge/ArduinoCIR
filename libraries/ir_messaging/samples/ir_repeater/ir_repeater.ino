@@ -1,10 +1,6 @@
 /* ir_repeater.ino
 
 Simple sketch that re-transmits valid incomming IR messages.
-
-NOTE:
--Supports ATmega1280/2560 only.  Repeater sketch is flaky when using system
- clock to modulate transmitter (IRTX_CREATE_TMR8BSCLK).
 */
 
 //Tell linker which libraries to include:
@@ -19,14 +15,23 @@ NOTE:
 #include <ir_serialtools.h> //Just to configure serial... not really needed
 
 //-----Instantiate HW-specific components-----
+#define _HW_SELECTCONFIG 1 //1..2
 const int PIN_IRRX = 4;               //IR receiver pin
 const bool INVERT_IRRX_SIGNAL = true; //Depends on polarity of rx module
 
-#define TIMER_IRTXMODULATOR 1         //!*
-#define TIMER_IRTXCARRIER 3           //!*Dictates IR transmit pin
-#define TIMER_IRRX 4                  //!*
-IRTX_CREATE_TMR16B(irTx, TIMER_IRTXMODULATOR, TIMER_IRTXCARRIER)
-IRRX_CREATE_TMR16B(irRx, TIMER_IRRX, PIN_IRRX, INVERT_IRRX_SIGNAL)
+#if (_HW_SELECTCONFIG == 1)
+   #define TIMER_IRRX 1                 //!*
+   #define TIMER_IRTXCARRIER 2          //!*Dictates IR transmit pin
+   IRRX_CREATE_TMR16B(irRx, TIMER_IRRX, PIN_IRRX, INVERT_IRRX_SIGNAL)
+   IRTX_CREATE_TMR8BSCLK(irTx, TIMER_IRTXCARRIER)
+#elif (_HW_SELECTCONFIG == 2)
+   // ***ATmega1280/2560 only***
+   #define TIMER_IRRX 4                 //!*
+   #define TIMER_IRTXMODULATOR 1        //!*
+   #define TIMER_IRTXCARRIER 3          //!*Dictates IR transmit pin
+   IRRX_CREATE_TMR16B(irRx, TIMER_IRRX, PIN_IRRX, INVERT_IRRX_SIGNAL)
+   IRTX_CREATE_TMR16B(irTx, TIMER_IRTXMODULATOR, TIMER_IRTXCARRIER)
+#endif
 //!*Must be #define-d to work with pre-processor macro
 
 

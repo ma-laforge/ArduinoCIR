@@ -84,13 +84,15 @@ ir\_messaging provides 3 sample sketches under the [libraries/ir\_messaging/samp
 - **ir\_tx\_onbutton**: Simple sketch that transmits a hard-coded IR message when a button is pressed.
 - **ir\_rx\_sniff**: Simple sketch that dumps recieved signal to serial output.
 - **ir\_repeater**: Simple sketch that re-transmits valid incomming IR messages.
-	- Note that this sketch only supports the Arduino Mega platforms.  Due to interrupt priorities, platforms that use the system clock (Timer0) for modulating the IR output will not successfully receive all incomming signals.  This task requires a bit more synchronization of the IR traffic.
+	- NOTE: Does not respect protocol-dependent periodicity (or signalling gap) between IR messages.  Take the NEC volume up/down commands for example:  The ir\_repeater sketch will recieve the first volume message, then immediately re-transmit it (~68ms) once fully decoded.  By the time the volume message re-transmission is complete, the receiver ISR will have already read in the trailing NEC "repeat" message (only ~11ms) - as per the 110ms periodicidy of messages in the NEC protocol.  Thus, without enforcing protocol-dependent periodicity, the first "repeat" message will be re-transmitted too early for proper detection by the end-user equipment.
 
 ## Usage Tips
 
 ### Atmel Timer0: Time & Delays
 
-On what appears to be all Atmel chipsets, the Arduino software uses Timer0 to measure time & implement delays (`delay()`, `delayMicroseconds()`, `millis()`, `micros()`).  Better not appropriate this timer for anything else.
+On what appears to be all Atmel chipsets, the Arduino software uses Timer0 to measure time (`millis()`, `micros()`).  It should probably use Timer0 to implement delays (`delay()`, `delayMicroseconds()`) in an interrupt-insensitive way as well... but it just counts cycles at the moment.  In any case: better not appropriate this timer for anything else.
+
+NOTE: The arduino\_tools library implements `wait_msec()` & `wait_usec()` (replacing `delay()` & `delayMicroseconds()`) with a busy-wait on elapsed time.
 
 ### Atmel: Timer Priorities
 
